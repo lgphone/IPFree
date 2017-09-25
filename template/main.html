@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <title>IP地址查询工具</title>
+    <link rel="stylesheet" href="{{ static_url('css/bootstrap.min.css')}}">
+    <style>
+        .main-navbar {
+            margin-bottom: 0;
+            background-color: #27ae60;
+        }
+        .site-header {
+            position: relative;
+            text-align: center;
+            background-color: #27ae60;
+            color: #fff;
+            margin-bottom: 0;
+            height: 500px;
+        }
+        .body{
+            margin-top: 50px;
+            padding-bottom: 70px;
+        }
+        .search-wraper {
+            margin-left: auto;
+            margin-right: auto;
+            max-width: 680px;
+            margin-top: 30px;
+            margin-bottom: 20px;
+        }
+        .search {
+            -webkit-box-shadow: none;
+            box-shadow: none;
+            font-size: 16px;
+            padding: 13px 30px;
+            border-radius: 0;
+            height: auto;
+            text-align: center;
+            border-color: transparent;
+        }
+        .query-btn {
+            width: auto;
+            height: 50px;
+        }
+        .error-msg {
+            font-weight: bold;
+        }
+
+        .ip_info div {
+            font-size: medium;
+        }
+    </style>
+</head>
+<body>
+    <header class="site-header">
+        <nav class="nav navbar-default navbar-fixed-top main-navbar" role="navigation">
+            <div class="container">
+                <div class="navbar-header">
+                    <a href="/index" class="navbar-brand" style="color:white;!important;">
+                    IP地址查询工具
+                    </a>
+                </div>
+                <div class="collapse navbar-collapse" id="menu">
+                    <ul class="nav navbar-nav navbar-right">
+                        <li><a href="#/about" class="navbar-link" style="color:white;!important;">关于</a></li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+        <div class="container body">
+            <div class="row">
+                <div class="col-xs-12">
+                    <h1>IPFree查询</h1>
+                    <h4 class="error-msg hide"></h4>
+                </div>
+            </div>
+            <div class="row">
+                <div class="search-wraper">
+                    <div class="form-group">
+                        <div class="input-group">
+                            <input type="text" name="query_ip" class="form-control search" id="query_ip" placeholder="请输入IP地址,例如 223.5.5.5" />
+                            <span class="input-group-btn">
+                                <button class="btn btn-default query-btn" type="button" onclick="SubmitQuery(this);"><span class="glyphicon glyphicon-search"> 查询</span></button>
+                            </span>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-xs-12 ip_info">
+                    <div class="ip"></div>
+                    <div class="zone"></div>
+                    <div class="country"></div>
+                    <div class="multiarea"></div>
+                    <div class="wj"></div>
+                    <div class="user"></div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+<div class="row">
+    <div class="col-md-12 text-center panel-footer">
+        © Prozhi.com 版权所没有
+    </div>
+</div>
+    <script src=" {{ static_url('js/jquery.min.js')}}"></script>
+    <script>
+        /* 检测回车键 */
+        $(document).keydown(function (event) {
+            if (event.keyCode == 13) {
+                $(".query-btn").click();
+            }
+        });
+
+        /* 验证IP有效性 */
+        function isValidIP(ip) {
+            var re = /^(25[0-5]|2[0-4]\d|[0-1]?\d?\d)(\.(25[0-5]|2[0-4]\d|[0-1]?\d?\d)){3}$/;
+            return re.test(ip);
+        }
+        
+        /* 查询提交*/
+        function SubmitQuery(ths){
+            /* 清空错误提示*/
+            $('.error-msg').empty().addClass('hide');
+            $('.ip_info').find('div').empty();
+
+            var query_ip = $('#query_ip').val();
+            /* 验证IP地址是否有效 */
+            if(isValidIP(query_ip) === false){
+                var err_msg = '!!! 请输入正确格式IP地址 !!!';
+                $('.error-msg').removeClass('hide').text(err_msg);
+                return
+            }
+            /* 添加等待效果 */
+            $(ths).attr('disabled','true');
+            $(ths).addClass('disable');
+
+            var post_dict = {'query_ip':query_ip};
+            console.log(post_dict);
+            /* ajax提交请求 */
+            $.ajax({
+                url: '/index',
+                type: 'POST',
+                data: post_dict,
+                dataType: 'json',
+                success: function(arg){
+                    /* 判断返回值，做出响应动作 */
+                    if(arg.status === 'true'){
+                        /* 成功后展示数据 */
+                        $('.ip_info').find('.ip').text('IP地址: ' + query_ip);
+                        $('.ip_info').find('.zone').text('所属区域: ' + arg.data.continent + ' ' + arg.data.areacode + ' ' + arg.data.country);
+                        if(arg.data.user){
+                            $('.ip_info').find('.user').text('运营商: ' + arg.data.user);
+                            $('.ip_info').find('.country').text('国家: ' + arg.data.country);
+                        }
+                        if(arg.data.multiarea){
+                            var ip_location = JSON.parse(arg.data.multiarea);
+                            $('.ip_info').find('.multiarea').text('详细地址: ' + ip_location[0].p + ip_location[0].c + ip_location[0].d);
+                            $('.ip_info').find('.wj').text('纬度: '+ ip_location[0].w + '  经度: ' + ip_location[0].j)
+                        }
+                    }else{
+                        /* 失败显示错误信息 */
+                        var err_msg = '!!!  ' + arg.message + '  !!!';
+                        $('.error-msg').removeClass('hide').text(err_msg);
+                    }
+                }
+            });
+            /* 扫尾 */
+            $(ths).removeAttr('disabled');
+            $(ths).removeClass('disable');
+        }
+    </script>
+</body>
+</html>
