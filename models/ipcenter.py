@@ -15,7 +15,7 @@ def exec_query_ip(ip='127.0.0.1'):
            'data': ''}
     try:
         with connection.cursor() as cursor:
-            sql = "SELECT * FROM `aiwen_free_district_v2.0.1` WHERE minip <= INET_ATON('{_query_ip}') ORDER BY minip DESC LIMIT 1;".format(_query_ip=ip)
+            sql = "SELECT * FROM `aiwen_free_district_v2_0_4` WHERE minip <= INET_ATON('{_query_ip}') ORDER BY minip DESC LIMIT 1;".format(_query_ip=ip)
             cursor.execute(sql)
             result = cursor.fetchone()
             ret['data'] = result
