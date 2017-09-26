@@ -4,7 +4,7 @@ IP地址归属地查询，精确到县级
 * 使用Tornado + pymysql + bootstrap
 * 核心数据库使用IP问问数据库
 ## Demo 地址
-[ipfree.prozhi.com](ipfree.prozhi.com)
+[http://ipfree.izhihu.me](http://ipfree.izhihu.me)
 ## 运行界面
 主界面
 ![主界面](https://github.com/lgphone/IPFree/blob/master/doc/pic/index.png)

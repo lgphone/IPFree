@@ -42,3 +42,4 @@ def exec_query_ip(ip='127.0.0.1'):
         ret['status'] = False
     finally:
         return ret
+
