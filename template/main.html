@@ -120,6 +120,7 @@
             var re = /^(25[0-5]|2[0-4]\d|[0-1]?\d?\d)(\.(25[0-5]|2[0-4]\d|[0-1]?\d?\d)){3}$/;
             return re.test(ip);
         }
+
         
         /* 查询提交*/
         function SubmitQuery(ths){
@@ -138,39 +139,48 @@
             $(ths).attr('disabled','true');
             $(ths).addClass('disable');
 
-            var post_dict = {'query_ip':query_ip};
-            console.log(post_dict);
-            /* ajax提交请求 */
-            $.ajax({
-                url: '/index',
-                type: 'POST',
-                data: post_dict,
-                dataType: 'json',
-                success: function(arg){
-                    /* 判断返回值，做出响应动作 */
-                    if(arg.status === 'true'){
-                        /* 成功后展示数据 */
-                        $('.ip_info').find('.ip').text('IP地址: ' + query_ip);
-                        $('.ip_info').find('.zone').text('所属区域: ' + arg.data.continent + ' ' + arg.data.areacode + ' ' + arg.data.country);
-                        if(arg.data.user){
-                            $('.ip_info').find('.user').text('运营商: ' + arg.data.user);
-                            $('.ip_info').find('.country').text('国家: ' + arg.data.country);
-                        }
-                        if(arg.data.multiarea){
-                            var ip_location = JSON.parse(arg.data.multiarea);
-                            $('.ip_info').find('.multiarea').text('详细地址: ' + ip_location[0].p + ip_location[0].c + ip_location[0].d);
-                            $('.ip_info').find('.wj').text('纬度: '+ ip_location[0].w + '  经度: ' + ip_location[0].j)
-                        }
-                    }else{
-                        /* 失败显示错误信息 */
-                        var err_msg = '!!!  ' + arg.message + '  !!!';
-                        $('.error-msg').removeClass('hide').text(err_msg);
-                    }
-                }
-            });
+            /* 底层原理jsonp请求方法 */
+            var api_url = "http://127.0.0.1:8000/ipfree?query_ip=" + query_ip + "&callback=getIpFree";
+            var script_tag = document.createElement('script');
+            script_tag.src = api_url;
+            document.head.appendChild(script_tag);
+            document.head.removeChild(script_tag);
+
+            /* ajax jsonp请求方法 */
+//            $.ajax({
+//                url: api_url,
+//                type: 'GET',
+//                dataType: 'jsonp',
+//                jsonp: 'callback',
+//                jsonpCallback: 'getIpFree',
+//            });
             /* 扫尾 */
             $(ths).removeAttr('disabled');
             $(ths).removeClass('disable');
+        }
+
+
+        /* jsonp 回调函数 */
+        function getIpFree(arg) {
+//            console.log(arg);
+            if(arg.status === 'true'){
+                /* 成功后展示数据 */
+                $('.ip_info').find('.ip').text('IP地址: ' + arg.query_ip);
+                $('.ip_info').find('.zone').text('所属区域: ' + arg.data.continent + ' ' + arg.data.areacode + ' ' + arg.data.country);
+                if(arg.data.user){
+                    $('.ip_info').find('.user').text('运营商: ' + arg.data.user);
+                    $('.ip_info').find('.country').text('国家: ' + arg.data.country);
+                }
+                if(arg.data.multiarea){
+                    var ip_location = JSON.parse(arg.data.multiarea);
+                    $('.ip_info').find('.multiarea').text('详细地址: ' + ip_location[0].p + ip_location[0].c + ip_location[0].d);
+                    $('.ip_info').find('.wj').text('纬度: '+ ip_location[0].w + '  经度: ' + ip_location[0].j)
+                }
+            }else{
+                /* 失败显示错误信息 */
+                var err_msg = '!!!  ' + arg.message + '  !!!';
+                $('.error-msg').removeClass('hide').text(err_msg);
+            }
         }
     </script>
 </body>
