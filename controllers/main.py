@@ -6,11 +6,14 @@ class IndexHandler(tornado.web.RequestHandler):
     def get(self):
         # print(self.request.remote_ip)
         # 获取本次本IP访问次数
-        count_ip_info = exec_count_ip(self.request.remote_ip)
+        remote_ip = self.request.remote_ip
+        if not remote_ip:
+            remote_ip = "获取不到您的IP"
+        count_ip_info = exec_count_ip(remote_ip)
         if count_ip_info['status']:
             count_ip = count_ip_info['data']
         else:
-            count_ip = {'ip_count': 0, 'ip': '127.0.0.1'}
+            count_ip = {'ip_count': 0, 'ip': '获取不到您的IP'}
 
         # 获取API总共请求次数
         count_api_info = exec_count_api()
