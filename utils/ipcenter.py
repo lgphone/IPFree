@@ -60,7 +60,8 @@ def exec_count_ip(ip='127.0.0.1'):
                 DBdrive.re_conn().commit()
             else:
                 cursor.execute(insert_sql, (ip, 1))
-                cursor.execute(update_sql)
+                cursor.execute(query_sql)
+                result = cursor.fetchone()
                 DBdrive.re_conn().commit()
             ret['data'] = result
     except Exception as e:
